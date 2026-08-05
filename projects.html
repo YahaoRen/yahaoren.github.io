@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>项目 · 任亚浩</title>
+  <meta name="description" content="任亚浩的公开研究 Artifact、AI 文献分析工具与全栈软件工程项目。">
+  <meta name="theme-color" content="#0d625a"><link rel="canonical" href="https://yahaoren.github.io/projects.html"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script>(()=>{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')})()</script><link rel="stylesheet" href="/assets/styles.css"><script src="/assets/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至主要内容</a>
+  <header class="site-header"><div class="container nav-shell"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">任</span><strong>Yahao Ren</strong><span>任亚浩</span></a><nav class="nav-links" data-nav-links aria-label="主要导航"><a href="/research/">研究</a><a href="/writing/">写作</a><a href="/projects.html" aria-current="page">项目</a><a href="/about.html">关于</a></nav><div class="nav-tools"><button class="nav-button" data-search-open type="button" aria-label="搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button><button class="nav-button" data-theme-toggle type="button" aria-label="切换主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></button><button class="nav-button mobile-toggle" type="button" data-mobile-toggle aria-expanded="false" aria-label="打开导航"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div></div></header>
+
+  <main id="main">
+    <section class="page-hero"><div class="container page-hero-grid"><p class="section-kicker">Projects / 项目</p><div><h1 class="page-title">Systems made inspectable.</h1><p class="page-lede">从研究验证代码到完整应用：项目的共同标准是边界清楚、入口明确、结构能够被第三方理解。</p></div></div></section>
+
+    <section class="section" aria-labelledby="featured-title"><div class="container">
+      <header class="section-header"><p class="section-kicker">01 / Featured</p><div><h2 class="section-title" id="featured-title">研究与工程的公开交付。</h2></div></header>
+      <article class="feature-research">
+        <div class="feature-copy"><span class="type-label">Research artifact · Python</span><h3>value-hijacking</h3><p>Value-Hijacking 投稿工作的公开 Artifact，包含安全清理后的参考实现、配置、提示模板、聚合结果和面向复核者的轻量验证路径。</p><div class="feature-links"><a class="text-link" href="https://github.com/YahaoRen/value-hijacking" target="_blank" rel="noopener">GitHub</a><a class="text-link internal" href="/research/value-hijacking.html">研究概览</a></div></div>
+        <aside class="feature-aside"><dl class="metric-list"><div><dt>Role</dt><dd>Research code and reproducibility artifact</dd></div><div><dt>Stack</dt><dd>Python · TeX · YAML</dd></div><div><dt>Focus</dt><dd>Data selection · LLM fine-tuning security</dd></div><div><dt>Status</dt><dd>Public · MIT licensed</dd></div></dl><div class="status-line"><span class="status-dot" aria-hidden="true"></span>Actively maintained</div></aside>
+      </article>
+    </div></section>
+
+    <section class="section" aria-labelledby="more-projects-title"><div class="container">
+      <header class="section-header"><p class="section-kicker">02 / More projects</p><div><h2 class="section-title" id="more-projects-title">应用型 AI 与全栈工程实践。</h2></div></header>
+      <div class="project-grid">
+        <a class="project-card" href="https://github.com/YahaoRen/ai-literature-analyzer" target="_blank" rel="noopener"><span class="project-index">P/02 · Course project</span><div><h3>AI Literature Analyzer</h3><p>支持 PDF 解析、结构化摘要、向量检索、RAG 问答、轻量知识图谱与综述生成的文献分析系统。</p><div class="project-stack"><span class="tag">FastAPI</span><span class="tag">Qdrant</span><span class="tag">RAG</span><span class="tag">Knowledge Graph</span></div></div></a>
+        <a class="project-card" id="mall-system" href="https://github.com/YahaoRen/mall-frontend" target="_blank" rel="noopener"><span class="project-index">P/03A · Frontend</span><div><h3>Campus Marketplace · Web</h3><p>校园二手交易场景的 Vue 3 客户端，作为前后端分离系统的交互层。</p><div class="project-stack"><span class="tag">Vue 3</span><span class="tag">Vite</span><span class="tag">Element Plus</span><span class="tag">Pinia</span></div></div></a>
+        <a class="project-card" href="https://github.com/YahaoRen/mall-backend" target="_blank" rel="noopener"><span class="project-index">P/03B · Backend</span><div><h3>Campus Marketplace · API</h3><p>与商城前端配套的 Java 服务端，实现面向业务数据的接口和持久化层。</p><div class="project-stack"><span class="tag">Spring Boot</span><span class="tag">MyBatis-Plus</span><span class="tag">MySQL</span></div></div></a>
+      </div>
+    </div></section>
+
+    <section class="section" aria-labelledby="criteria-title"><div class="container"><header class="section-header"><p class="section-kicker">03 / Criteria</p><div><h2 class="section-title" id="criteria-title">我如何判断一个项目是否完成。</h2></div></header><div class="entry-list">
+      <div class="entry"><span class="entry-meta">01<br>Legible</span><span><span class="entry-title">陌生人能找到入口</span><span class="entry-description">README、目录和运行命令不依赖作者脑中的隐含上下文。</span></span><span class="entry-arrow" aria-hidden="true">—</span></div>
+      <div class="entry"><span class="entry-meta">02<br>Bounded</span><span><span class="entry-title">明确能做什么，也明确不能做什么</span><span class="entry-description">许可证、依赖、数据来源和系统限制不隐藏在实现细节里。</span></span><span class="entry-arrow" aria-hidden="true">—</span></div>
+      <div class="entry"><span class="entry-meta">03<br>Testable</span><span><span class="entry-title">关键路径可以被验证</span><span class="entry-description">用最小测试覆盖最重要的假设，而不是只保证演示环境能运行。</span></span><span class="entry-arrow" aria-hidden="true">—</span></div>
+    </div></div></section>
+  </main>
+
+  <footer class="site-footer"><div class="container footer-grid"><p class="footer-statement">Build for the next reader.</p><div class="footer-meta"><div class="footer-links"><a href="https://github.com/YahaoRen" target="_blank" rel="me noopener">All repositories</a><a href="/about.html">About</a></div><div class="copyright">© <span data-current-year>2026</span> Yahao Ren</div></div></div></footer>
+  <dialog class="search-dialog" data-search-dialog aria-labelledby="search-title"><div class="search-head"><input class="search-input" type="search" data-search-input id="search-title" placeholder="搜索研究、文章与项目…"><button class="dialog-close" type="button" data-search-close>ESC</button></div><ul class="search-results" data-search-results aria-live="polite"></ul></dialog>
+</body>
+</html>

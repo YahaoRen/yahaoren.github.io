@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>可复现研究 Artifact 的最小清单 · 任亚浩</title>
+  <meta name="description" content="从代码能运行到第三方能验证结论：可复现研究 Artifact 的目录、脚本、数据和边界清单。">
+  <meta name="theme-color" content="#0d625a"><link rel="canonical" href="https://yahaoren.github.io/writing/reproducible-artifacts.html"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="alternate" type="application/rss+xml" title="任亚浩的写作" href="/rss.xml">
+  <script>(()=>{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')})()</script><link rel="stylesheet" href="/assets/styles.css"><script src="/assets/main.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"可复现研究 Artifact 的最小清单","datePublished":"2026-08-05","author":{"@type":"Person","name":"Yahao Ren"},"url":"https://yahaoren.github.io/writing/reproducible-artifacts.html","inLanguage":"zh-CN"}</script>
+</head>
+<body>
+  <a class="skip-link" href="#article">跳至正文</a><div class="progress-track" aria-hidden="true"><div class="progress-bar" data-progress></div></div>
+  <header class="site-header"><div class="container nav-shell"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">任</span><strong>Yahao Ren</strong><span>任亚浩</span></a><nav class="nav-links" data-nav-links aria-label="主要导航"><a href="/research/">研究</a><a href="/writing/" aria-current="page">写作</a><a href="/projects.html">项目</a><a href="/about.html">关于</a></nav><div class="nav-tools"><button class="nav-button" data-search-open type="button" aria-label="搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button><button class="nav-button" data-theme-toggle type="button" aria-label="切换主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></button><button class="nav-button mobile-toggle" type="button" data-mobile-toggle aria-expanded="false" aria-label="打开导航"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div></div></header>
+
+  <main id="article">
+    <header class="article-header"><div class="container article-header-inner"><span class="type-label">Field note · Reproducibility</span><h1 class="article-title">可复现研究 Artifact 的最小清单</h1><p class="article-deck">可复现不是把代码压缩上传，而是为陌生的第三方设计一条从结论回到证据的路径。</p><div class="article-byline"><span>Yahao Ren</span><time datetime="2026-08-05">2026.08.05</time><span>6 min read</span><span>Engineering</span></div></div></header>
+    <details class="container mobile-toc"><summary>Contents / 目录</summary><ol><li><a href="#goal">先定义复现目标</a></li><li><a href="#structure">最小目录结构</a></li><li><a href="#smoke">轻量验证路径</a></li><li><a href="#boundary">边界与安全</a></li><li><a href="#checklist">发布前清单</a></li></ol></details>
+    <div class="container article-layout">
+      <article class="article-body">
+        <p>“代码已经上传”经常被当作可复现的同义词。但站在复核者的角度，真正的问题是：我能否理解环境、找到入口、执行最短路径，并把得到的输出映射回论文或报告中的某个结论？</p>
+
+        <h2 id="goal">先定义复现目标</h2>
+        <p>不同复现层级需要不同成本。把它们混在一起，会让轻量检查显得不充分，也让完整重训练显得遥不可及。可以先明确三层目标：</p>
+        <ol>
+          <li><strong>结构检查：</strong>配置、数据字段、脚本入口和输出映射是否完整。</li>
+          <li><strong>证据复算：</strong>能否从发布的结构化结果重建表格、图和统计量。</li>
+          <li><strong>端到端重现：</strong>在取得模型、数据和算力后，能否重新执行完整流程。</li>
+        </ol>
+
+        <h2 id="structure">最小目录结构</h2>
+        <p>目录名称应该向第一次打开仓库的人解释系统，而不是复刻作者机器上的历史。一个紧凑的起点可以是：</p>
+        <div class="code-block"><div class="code-header"><span>Artifact layout</span><button class="copy-code" type="button" data-copy-code>复制</button></div><pre><code>artifact/
+├── README.md              # 目标、入口与状态
+├── REVIEWER_GUIDE.md      # 最短验证路径
+├── MANIFEST.md            # 文件与论文结论映射
+├── requirements.txt       # 轻量依赖
+├── configs/               # 可审计配置
+├── data/                  # 允许发布的样例或清理数据
+├── results/               # 结构化聚合结果
+├── scripts/               # 单一职责的命令行入口
+├── src/                   # 可复用实现
+└── tests/                 # smoke 与一致性检查</code></pre></div>
+        <p>最重要的不是目录名字本身，而是每个文件都能回答“它支持哪一个检查”。</p>
+
+        <h2 id="smoke">设计轻量验证路径</h2>
+        <p>复核者不应在第一步就被要求下载数百 GB 模型或等待完整训练。Smoke test 可以优先验证那些不依赖 GPU 的结构性事实：</p>
+        <ul>
+          <li>编译或导入所有发布模块；</li>
+          <li>从聚合 CSV 重新计算表格；</li>
+          <li>用 toy input 检查命令行参数和数据流；</li>
+          <li>确认配置引用的路径均为相对路径；</li>
+          <li>扫描意外泄露的密钥、本地用户名与绝对路径。</li>
+        </ul>
+        <p>一个好的 smoke test 应在普通 CPU 环境中完成，并清楚声明它验证了什么、没有验证什么。</p>
+
+        <h2 id="boundary">写清边界，也写清安全</h2>
+        <p>数据不能发布、模型受许可证限制或完整实验需要商业 API，都不应被埋在报错里。边界说明至少应覆盖：</p>
+        <ul>
+          <li>哪些资源来自外部，如何合法取得；</li>
+          <li>哪些结果由发布数据直接支持；</li>
+          <li>哪些模块是安全清理后的参考实现；</li>
+          <li>哪些功能因滥用风险、隐私或双盲评审要求而排除。</li>
+        </ul>
+        <blockquote><p>诚实的范围声明不会削弱 Artifact；它让可验证的部分更可信。</p></blockquote>
+
+        <h2 id="checklist">发布前清单</h2>
+        <ul>
+          <li>在一台干净机器或全新虚拟环境中执行 README；</li>
+          <li>确认没有绝对路径、缓存依赖、私有数据和凭据；</li>
+          <li>为每张关键表或图提供机器可读的源数据；</li>
+          <li>固定随机种子，同时说明仍可能存在的非确定性；</li>
+          <li>明确 license、第三方资源条款与研究状态；</li>
+          <li>让未参与项目的人只按文档完成一次验证。</li>
+        </ul>
+        <p>真正的目标不是让仓库显得复杂，而是让证据链变短。复杂训练可以昂贵，但理解一次实验为什么支持某个结论，不应该昂贵。</p>
+
+        <footer class="article-footer"><h2>参考实例</h2><p><a href="https://github.com/YahaoRen/value-hijacking" target="_blank" rel="noopener">Value-Hijacking public artifact ↗</a></p></footer>
+      </article>
+      <aside class="article-toc" aria-label="文章目录"><h2>Contents</h2><ol><li><a href="#goal">先定义复现目标</a></li><li><a href="#structure">最小目录结构</a></li><li><a href="#smoke">轻量验证路径</a></li><li><a href="#boundary">边界与安全</a></li><li><a href="#checklist">发布前清单</a></li></ol></aside>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container footer-grid"><p class="footer-statement">Shorten the path from claim to evidence.</p><div class="footer-meta"><div class="footer-links"><a href="/writing/">All writing</a><a href="/research/">Research</a></div><div class="copyright">© <span data-current-year>2026</span> Yahao Ren</div></div></div></footer>
+  <dialog class="search-dialog" data-search-dialog aria-labelledby="search-title"><div class="search-head"><input class="search-input" type="search" data-search-input id="search-title" placeholder="搜索研究、文章与项目…"><button class="dialog-close" type="button" data-search-close>ESC</button></div><ul class="search-results" data-search-results aria-live="polite"></ul></dialog>
+</body>
+</html>

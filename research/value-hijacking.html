@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Value-Hijacking · 研究概览 · 任亚浩</title>
+  <meta name="description" content="Value-Hijacking 研究与公开 Artifact 概览：数据选择器如何成为大模型微调数据管线中的投毒放大器。">
+  <meta name="theme-color" content="#0d625a">
+  <link rel="canonical" href="https://yahaoren.github.io/research/value-hijacking.html">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script>(()=>{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')})()</script>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/main.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"ScholarlyArticle","headline":"Value-Hijacking: Data Selectors as Poisoning Amplifiers in LLM Fine-Tuning Data Pipelines","author":[{"@type":"Person","name":"Yahao Ren"},{"@type":"Person","name":"Jiawei Duan"},{"@type":"Person","name":"Huadi Zheng"}],"isAccessibleForFree":true,"url":"https://yahaoren.github.io/research/value-hijacking.html"}</script>
+</head>
+<body>
+  <a class="skip-link" href="#article">跳至正文</a>
+  <div class="progress-track" aria-hidden="true"><div class="progress-bar" data-progress></div></div>
+  <header class="site-header">
+    <div class="container nav-shell">
+      <a class="brand" href="/" aria-label="任亚浩首页"><span class="brand-mark" aria-hidden="true">任</span><strong>Yahao Ren</strong><span>任亚浩</span></a>
+      <nav class="nav-links" data-nav-links aria-label="主要导航"><a href="/research/" aria-current="page">研究</a><a href="/writing/">写作</a><a href="/projects.html">项目</a><a href="/about.html">关于</a></nav>
+      <div class="nav-tools"><button class="nav-button" type="button" data-search-open aria-label="搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button><button class="nav-button" type="button" data-theme-toggle aria-label="切换主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></button><button class="nav-button mobile-toggle" type="button" data-mobile-toggle aria-expanded="false" aria-label="打开导航"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-header">
+      <div class="container article-header-inner">
+        <span class="type-label">Research overview · Under review</span>
+        <h1 class="article-title">Value-Hijacking: Data Selectors as Poisoning Amplifiers</h1>
+        <p class="article-deck">把数据选择器视为独立安全边界：它不仅决定训练效率，也可能改变恶意样本进入微调集的概率。</p>
+        <div class="article-byline"><span>Yahao Ren</span><span>Jiawei Duan</span><span>Huadi Zheng</span><span>PVLDB submission</span><span>Public artifact</span></div>
+      </div>
+    </header>
+
+    <details class="container mobile-toc"><summary>Contents / 目录</summary><ol><li><a href="#question">研究问题</a></li><li><a href="#pipeline">为什么关注选择阶段</a></li><li><a href="#artifact">公开 Artifact</a></li><li><a href="#boundary">复现边界</a></li><li><a href="#citation">引用</a></li></ol></details>
+
+    <div class="container article-layout">
+      <article class="article-body">
+        <div class="abstract-box"><strong>Abstract in plain language</strong>许多微调流程会先用数据选择器从候选池中挑出“高价值”样本。Value-Hijacking 研究考察一个安全问题：如果攻击者知道选择器偏好，能否构造更容易被选中的恶意记录，使选择阶段反而放大投毒风险？本页只概述已公开 Artifact，不将投稿状态表述为发表结论。</div>
+
+        <h2 id="question">研究问题</h2>
+        <p>大模型指令微调经常面对一个现实限制：候选数据很多，但计算预算有限。数据选择器因此承担了重要角色——它们对样本评分、排序，再把有限预算集中在看起来更有用的数据上。</p>
+        <p>这带来一个容易被忽略的问题：选择规则不是被动过滤器。当数据供应方具有对抗性、并且能够推断选择器偏好时，样本的“高分”与“安全”并不是同一个概念。</p>
+        <blockquote><p>研究关注的不是“选择器是否提高平均效用”，而是“在对抗性数据供应环境中，效用信号是否会被重新利用”。</p></blockquote>
+
+        <h2 id="pipeline">为什么关注选择阶段</h2>
+        <p>传统训练数据安全分析往往关注投毒比例、训练过程或最终行为。select-then-train 管线在这些环节之前增加了一次有方向性的采样：数据不是随机进入训练集，而是由评分函数决定。</p>
+        <ol>
+          <li><strong>候选数据供应：</strong>来自多个来源的指令样本进入候选池。</li>
+          <li><strong>效用评分与排序：</strong>选择器根据难度、质量、影响或代表性等信号排序。</li>
+          <li><strong>预算内选取：</strong>排名靠前的记录进入有限的微调集合。</li>
+          <li><strong>训练与评估：</strong>模型行为反映被选数据，而不仅是原始候选池的分布。</li>
+        </ol>
+        <p>因此，即使候选池中的恶意样本比例很低，只要它们更符合选择器的偏好，实际进入训练集的占比也可能发生结构性变化。这正是“amplifier”这一表述的含义。</p>
+
+        <h2 id="artifact">公开 Artifact 包含什么</h2>
+        <p>公开仓库的目标是支持结果检查，而不是提供不受约束的攻击工具。发布内容包含经过清理的参考模块、配置模板、提示模板、论文表格对应的聚合结果，以及轻量验证脚本。</p>
+        <ul>
+          <li><code>src/vhp_artifact/</code>：选择器评分、生成与重排、训练命令构造、推理评估和表格复算的参考模块。</li>
+          <li><code>results/</code> 与 <code>derived_tables/</code>：聚合结果及其 Markdown / LaTeX 表格渲染。</li>
+          <li><code>configs/</code> 与 <code>prompts/</code>：实验配置和审查协议模板。</li>
+          <li><code>REVIEWER_GUIDE.md</code>：面向复核者的最短检查路径。</li>
+        </ul>
+
+        <div class="code-block">
+          <div class="code-header"><span>Reviewer smoke test</span><button class="copy-code" type="button" data-copy-code>复制</button></div>
+          <pre><code>pip install -r requirements.txt
+python scripts/run_smoke_tests.py
+python scripts/recompute_tables.py</code></pre>
+        </div>
+
+        <h2 id="boundary">复现边界</h2>
+        <p>一个可信 Artifact 需要同时说明“提供了什么”与“没有提供什么”。仓库中的轻量测试可以复算已发布聚合数据对应的表格、重建统计并检查代码路径，但完整重训练仍需要外部模型权重、数据集、GPU 和 API 访问。</p>
+        <p>这种边界并不意味着复现失败，而是把验证问题拆成不同层级：第三方可以先确认表格和统计的一致性，再决定是否投入资源执行完整实验。</p>
+
+        <h2 id="citation">引用与状态</h2>
+        <p>该工作目前标记为投稿阶段，并未在本页声明已录用或正式发表。公开仓库给出的引用信息如下：</p>
+        <div class="code-block">
+          <div class="code-header"><span>BibTeX (submission)</span><button class="copy-code" type="button" data-copy-code>复制</button></div>
+          <pre><code>@misc{ren2027valuehijacking,
+  title  = {Value-Hijacking: Data Selectors as Poisoning
+            Amplifiers in LLM Fine-Tuning Data Pipelines},
+  author = {Yahao Ren and Jiawei Duan and Huadi Zheng},
+  year   = {2027},
+  note   = {PVLDB submission}
+}</code></pre>
+        </div>
+
+        <footer class="article-footer">
+          <h2>材料入口</h2>
+          <p><a href="https://github.com/YahaoRen/value-hijacking" target="_blank" rel="noopener">GitHub Artifact ↗</a> · <a href="/writing/value-hijacking-notes.html">阅读中文研究笔记 →</a></p>
+        </footer>
+      </article>
+
+      <aside class="article-toc" aria-label="文章目录"><h2>Contents</h2><ol><li><a href="#question">研究问题</a></li><li><a href="#pipeline">为什么关注选择阶段</a></li><li><a href="#artifact">公开 Artifact</a></li><li><a href="#boundary">复现边界</a></li><li><a href="#citation">引用与状态</a></li></ol></aside>
+    </div>
+  </main>
+
+  <footer class="site-footer"><div class="container footer-grid"><p class="footer-statement">Make the evidence inspectable.</p><div class="footer-meta"><div class="footer-links"><a href="/research/">Research</a><a href="https://github.com/YahaoRen/value-hijacking" target="_blank" rel="noopener">Artifact</a></div><div class="copyright">© <span data-current-year>2026</span> Yahao Ren</div></div></div></footer>
+  <dialog class="search-dialog" data-search-dialog aria-labelledby="search-title"><div class="search-head"><input class="search-input" type="search" data-search-input id="search-title" placeholder="搜索研究、文章与项目…"><button class="dialog-close" type="button" data-search-close>ESC</button></div><ul class="search-results" data-search-results aria-live="polite"></ul></dialog>
+</body>
+</html>

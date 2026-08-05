@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>从 Value-Hijacking 看数据选择器的安全边界 · 任亚浩</title>
+  <meta name="description" content="从 Value-Hijacking 公开 Artifact 出发，理解 select-then-train 管线中数据选择器的安全边界。">
+  <meta name="theme-color" content="#0d625a"><link rel="canonical" href="https://yahaoren.github.io/writing/value-hijacking-notes.html"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="alternate" type="application/rss+xml" title="任亚浩的写作" href="/rss.xml">
+  <script>(()=>{const s=localStorage.getItem('theme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')})()</script><link rel="stylesheet" href="/assets/styles.css"><script src="/assets/main.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"从 Value-Hijacking 看数据选择器的安全边界","datePublished":"2026-08-05","author":{"@type":"Person","name":"Yahao Ren"},"url":"https://yahaoren.github.io/writing/value-hijacking-notes.html","inLanguage":"zh-CN"}</script>
+</head>
+<body>
+  <a class="skip-link" href="#article">跳至正文</a><div class="progress-track" aria-hidden="true"><div class="progress-bar" data-progress></div></div>
+  <header class="site-header"><div class="container nav-shell"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">任</span><strong>Yahao Ren</strong><span>任亚浩</span></a><nav class="nav-links" data-nav-links aria-label="主要导航"><a href="/research/">研究</a><a href="/writing/" aria-current="page">写作</a><a href="/projects.html">项目</a><a href="/about.html">关于</a></nav><div class="nav-tools"><button class="nav-button" data-search-open type="button" aria-label="搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button><button class="nav-button" data-theme-toggle type="button" aria-label="切换主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></button><button class="nav-button mobile-toggle" type="button" data-mobile-toggle aria-expanded="false" aria-label="打开导航"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div></div></header>
+
+  <main id="article">
+    <header class="article-header"><div class="container article-header-inner"><span class="type-label">Research note · AI Security</span><h1 class="article-title">从 Value-Hijacking 看数据选择器的安全边界</h1><p class="article-deck">选择器优化“哪些数据更值得训练”，也因此决定攻击者最希望模拟什么信号。</p><div class="article-byline"><span>Yahao Ren</span><time datetime="2026-08-05">2026.08.05</time><span>8 min read</span><span>Data selection</span></div></div></header>
+    <details class="container mobile-toc"><summary>Contents / 目录</summary><ol><li><a href="#neutral">选择不是中性的</a></li><li><a href="#amplifier">放大从哪里发生</a></li><li><a href="#audit">应该审计什么</a></li><li><a href="#limits">结论边界</a></li></ol></details>
+    <div class="container article-layout">
+      <article class="article-body">
+        <p>数据选择通常被描述为一个效率问题：当候选数据多于训练预算时，我们希望保留最有帮助的那部分。这个描述没有错，但不完整。选择器一旦参与决定训练集，它就成为了从外部数据到模型行为之间的一道控制面。</p>
+
+        <h2 id="neutral">选择不是中性的</h2>
+        <p>任何评分规则都隐含了偏好。它可能偏好困难样本、代表性样本、高质量回答，或者对当前模型参数影响更大的样本。这些信号在正常数据上能够帮助分配预算，但在对抗场景中也会向攻击者暴露目标。</p>
+        <p>如果供应者只是随机插入恶意记录，选择器或许会过滤掉一部分低质量样本；如果供应者反过来优化记录，让它们在选择信号上表现良好，那么过滤器的方向性就可能被利用。</p>
+        <blockquote><p>安全分析不能只问“候选池里有多少毒”，还要问“选择之后，训练集里剩下多少毒”。</p></blockquote>
+
+        <h2 id="amplifier">放大从哪里发生</h2>
+        <p>“放大”并不要求选择器主动执行恶意逻辑。它只需要持续把某类分数更高的记录排到前面。攻击者针对这个排序机制调整数据后，小规模候选污染就可能在预算受限的训练集中占据更大份额。</p>
+        <p>因此，至少有三个分布需要被分别报告：</p>
+        <ol>
+          <li>原始候选池中的来源与标签分布；</li>
+          <li>选择器输出集合中的来源与标签分布；</li>
+          <li>训练后模型在效用、安全和拒答行为上的变化。</li>
+        </ol>
+        <p>如果只展示第三项，就很难判断行为变化来自训练算法、候选数据，还是选择阶段的结构性偏移。</p>
+
+        <h2 id="audit">应该审计什么</h2>
+        <h3>把选择器当作安全关键组件</h3>
+        <p>选择器需要独立的威胁模型：攻击者能观察什么？能控制哪些字段？能否反复提交候选数据？选择分数是否会泄露？不同答案会对应不同的风险面。</p>
+        <h3>保留来源信息</h3>
+        <p>在选择后才尝试恢复数据来源通常已经太晚。数据来源、供应者和变换链路应在评分前就进入审计记录，并在最终训练集合中保留下来。</p>
+        <h3>比较多个选择视角</h3>
+        <p>一个记录被单一选择器持续高估，不等于它在其他质量或安全视角下同样可靠。多视角比较不能自动解决投毒，但能暴露异常一致性和异常分歧。</p>
+
+        <h2 id="limits">结论边界</h2>
+        <p>这篇笔记只解释公开研究问题与 Artifact 结构，不在投稿完成前披露未公开实验，也不把 submission 写成 publication。更详细的代码、提示模板、聚合数据和验证路径可在公开仓库中检查。</p>
+        <p>更重要的结论是一种分析习惯：当系统加入“智能选择”步骤时，不应默认它只改善效率。任何能够持续改变数据流向的组件，都值得被纳入端到端安全模型。</p>
+
+        <footer class="article-footer"><h2>公开材料</h2><p><a href="/research/value-hijacking.html">研究概览 →</a> · <a href="https://github.com/YahaoRen/value-hijacking" target="_blank" rel="noopener">GitHub Artifact ↗</a></p></footer>
+      </article>
+      <aside class="article-toc" aria-label="文章目录"><h2>Contents</h2><ol><li><a href="#neutral">选择不是中性的</a></li><li><a href="#amplifier">放大从哪里发生</a></li><li><a href="#audit">应该审计什么</a></li><li><a href="#limits">结论边界</a></li></ol></aside>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container footer-grid"><p class="footer-statement">Selection changes the threat model.</p><div class="footer-meta"><div class="footer-links"><a href="/writing/">All writing</a><a href="/research/">Research</a></div><div class="copyright">© <span data-current-year>2026</span> Yahao Ren</div></div></div></footer>
+  <dialog class="search-dialog" data-search-dialog aria-labelledby="search-title"><div class="search-head"><input class="search-input" type="search" data-search-input id="search-title" placeholder="搜索研究、文章与项目…"><button class="dialog-close" type="button" data-search-close>ESC</button></div><ul class="search-results" data-search-results aria-live="polite"></ul></dialog>
+</body>
+</html>
