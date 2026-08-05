@@ -3,30 +3,9 @@
   <channel>
     <title>任亚浩的写作</title>
     <link>https://yahaoren.github.io/writing/</link>
-    <description>AI 安全、可复现研究、软件工程与过程写作。</description>
+    <description>任亚浩的公开文章与研究笔记。</description>
     <language>zh-CN</language>
     <lastBuildDate>Wed, 05 Aug 2026 12:00:00 +0800</lastBuildDate>
     <atom:link href="https://yahaoren.github.io/rss.xml" rel="self" type="application/rss+xml"/>
-    <item>
-      <title>从 Value-Hijacking 看数据选择器的安全边界</title>
-      <link>https://yahaoren.github.io/writing/value-hijacking-notes.html</link>
-      <guid isPermaLink="true">https://yahaoren.github.io/writing/value-hijacking-notes.html</guid>
-      <pubDate>Wed, 05 Aug 2026 12:00:00 +0800</pubDate>
-      <description>选择器为什么不只是效率组件，以及应当如何检查 select-then-train 管线。</description>
-    </item>
-    <item>
-      <title>可复现研究 Artifact 的最小清单</title>
-      <link>https://yahaoren.github.io/writing/reproducible-artifacts.html</link>
-      <guid isPermaLink="true">https://yahaoren.github.io/writing/reproducible-artifacts.html</guid>
-      <pubDate>Wed, 05 Aug 2026 11:00:00 +0800</pubDate>
-      <description>从代码能运行到第三方能验证结论：一份具体的研究 Artifact 清单。</description>
-    </item>
-    <item>
-      <title>为什么我要把研究过程写下来</title>
-      <link>https://yahaoren.github.io/writing/why-i-write.html</link>
-      <guid isPermaLink="true">https://yahaoren.github.io/writing/why-i-write.html</guid>
-      <pubDate>Wed, 05 Aug 2026 10:00:00 +0800</pubDate>
-      <description>保存问题、选择和失败，而不仅仅是最终答案。</description>
-    </item>
   </channel>
 </rss>

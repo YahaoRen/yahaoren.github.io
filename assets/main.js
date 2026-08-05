@@ -26,29 +26,8 @@ const searchIndex = [
     title: "写作 / Writing",
     type: "Page",
     url: "/writing/",
-    description: "研究笔记、工程实践与长期思考。",
+    description: "公开文章与研究笔记归档；当前暂无内容。",
     keywords: "writing 文章 笔记 blog"
-  },
-  {
-    title: "为什么我要把研究过程写下来",
-    type: "Essay",
-    url: "/writing/why-i-write.html",
-    description: "关于公开写作、可复现研究和个人博客的第一篇文章。",
-    keywords: "写作 研究 可复现 blog"
-  },
-  {
-    title: "从 Value-Hijacking 看数据选择器的安全边界",
-    type: "Research Note",
-    url: "/writing/value-hijacking-notes.html",
-    description: "从公开 Artifact 出发，理解 select-then-train 管线中的风险。",
-    keywords: "value hijacking 数据选择器 安全 投毒"
-  },
-  {
-    title: "可复现研究 Artifact 的最小清单",
-    type: "Field Note",
-    url: "/writing/reproducible-artifacts.html",
-    description: "把研究结论变成可检查、可运行、可复核的软件交付物。",
-    keywords: "reproducible artifact checklist research"
   },
   {
     title: "项目 / Projects",
