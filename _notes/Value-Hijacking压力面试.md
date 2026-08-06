@@ -10,7 +10,7 @@ published: true
 ---
 # 项目一《Value-Hijacking》压力面试 · 50 问答（终版）
 
-> 论文：_Value-Hijacking: Data Selectors as Poisoning Amplifiers in LLM Fine-Tuning Supply Chains_（一作，CCF-A 会议 S&P 在投） 面向：李勇军老师面谈（聚焦本科科研）
+> 论文：_Value-Hijacking: Data Selectors as Poisoning Amplifiers in LLM Fine-Tuning Supply Chains_（一作，CCF-A 会议 S&P 在投） （聚焦本科科研）
 
 **🔑 必背速记卡**
 
