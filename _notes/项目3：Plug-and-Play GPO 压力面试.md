@@ -1,5 +1,5 @@
 ---
-title: Plug-and-Play GPO 压力面试
+title: 项目3：Plug-and-Play GPO 压力面试
 summary: ""
 date: 2026-08-06 10:07:50 +0800
 updated: 2026-08-06
