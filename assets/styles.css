@@ -610,10 +610,22 @@ button {
 }
 
 .entry-description {
+  display: block;
   max-width: 700px;
   margin: 6px 0 0;
   color: var(--ink-soft);
   font-size: 14px;
+}
+
+.entry-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.section-action {
+  margin: 24px 0 0;
 }
 
 .entry-arrow {
@@ -933,7 +945,8 @@ button {
 }
 
 .article-body h2,
-.article-body h3 {
+.article-body h3,
+.article-body h4 {
   color: var(--ink);
   font-family: var(--font-ui);
   letter-spacing: -0.02em;
@@ -948,6 +961,11 @@ button {
 .article-body h3 {
   margin: 42px 0 14px;
   font-size: 21px;
+}
+
+.article-body h4 {
+  margin: 32px 0 12px;
+  font-size: 17px;
 }
 
 .article-body p,
@@ -975,6 +993,85 @@ button {
 
 .article-body blockquote p:last-child {
   margin-bottom: 0;
+}
+
+.article-body :not(pre) > code {
+  padding: 0.14em 0.38em;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+}
+
+.article-body hr {
+  margin: 48px 0;
+  border: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.article-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 32px auto;
+  border-radius: var(--radius-sm);
+}
+
+.article-body figure {
+  margin: 36px 0;
+}
+
+.article-body figure img {
+  margin-bottom: 12px;
+}
+
+.article-body figcaption {
+  color: var(--ink-faint);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  text-align: center;
+}
+
+.article-body table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  margin: 32px 0;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.article-body th,
+.article-body td {
+  min-width: 120px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.article-body th {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.article-body .task-list-item {
+  list-style: none;
+}
+
+.article-body .task-list-item input {
+  margin-inline: -1.35em 0.5em;
+}
+
+.article-body .footnotes {
+  margin-top: 54px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-strong);
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: 14px;
 }
 
 .abstract-box {
@@ -1045,6 +1142,10 @@ button {
   padding: 20px;
 }
 
+.code-block .highlight {
+  margin: 0;
+}
+
 .code-block code {
   font: inherit;
 }
@@ -1074,6 +1175,10 @@ button {
   list-style: none;
 }
 
+.article-toc .toc-level-h3 {
+  padding-left: 12px;
+}
+
 .article-toc a {
   display: block;
   color: var(--ink-soft);
@@ -1089,6 +1194,10 @@ button {
 
 .mobile-toc {
   display: none;
+}
+
+[data-generated-toc-shell][hidden] {
+  display: none !important;
 }
 
 .article-footer {
@@ -1372,6 +1481,10 @@ button {
   .mobile-toc a {
     color: var(--ink-soft);
     font-size: 13px;
+  }
+
+  .mobile-toc .toc-level-h3 {
+    margin-left: 16px;
   }
 }
 

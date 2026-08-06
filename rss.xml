@@ -1,11 +1,27 @@
+---
+layout: null
+permalink: /rss.xml
+---
+{%- assign published_notes = site.notes | where: 'published', true -%}
+{%- assign public_notes = published_notes | where_exp: 'note', 'note.date <= site.time' | sort: 'date' | reverse -%}
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>任亚浩的写作</title>
-    <link>https://yahaoren.github.io/writing/</link>
+    <link>{{ '/writing/' | absolute_url }}</link>
     <description>任亚浩的公开文章与研究笔记。</description>
-    <language>zh-CN</language>
-    <lastBuildDate>Wed, 05 Aug 2026 12:00:00 +0800</lastBuildDate>
-    <atom:link href="https://yahaoren.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+    <language>{{ site.lang | default: 'zh-CN' }}</language>
+    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
+    <atom:link href="{{ '/rss.xml' | absolute_url }}" rel="self" type="application/rss+xml"/>
+    {% for note in public_notes limit: 20 %}
+    {% assign note_summary = note.summary | default: note.description | default: note.excerpt | strip_html | normalize_whitespace %}
+    <item>
+      <title>{{ note.title | default: note.name | xml_escape }}</title>
+      <link>{{ note.url | absolute_url }}</link>
+      <guid isPermaLink="true">{{ note.url | absolute_url }}</guid>
+      <pubDate>{{ note.date | date_to_rfc822 }}</pubDate>
+      <description>{{ note_summary | truncate: 500 | xml_escape }}</description>
+    </item>
+    {% endfor %}
   </channel>
 </rss>

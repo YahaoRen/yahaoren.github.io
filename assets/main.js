@@ -1,6 +1,6 @@
 const root = document.documentElement;
 
-const searchIndex = [
+const fallbackSearchIndex = [
   {
     title: "首页 / Home",
     type: "Page",
@@ -26,7 +26,7 @@ const searchIndex = [
     title: "写作 / Writing",
     type: "Page",
     url: "/writing/",
-    description: "公开文章与研究笔记归档；当前暂无内容。",
+    description: "公开文章与研究笔记归档。",
     keywords: "writing 文章 笔记 blog"
   },
   {
@@ -40,10 +40,31 @@ const searchIndex = [
     title: "关于 / About",
     type: "Page",
     url: "/about.html",
-    description: "任亚浩的软件工程与 AI 安全研究简介。",
-    keywords: "about bio 太原理工大学 software engineering"
+    description: "任亚浩的 AI 安全与软件工程研究简介。",
+    keywords: "about bio AI security software engineering"
   }
 ];
+
+let searchIndex = fallbackSearchIndex;
+let searchIndexRequest;
+
+function loadSearchIndex() {
+  if (!searchIndexRequest) {
+    searchIndexRequest = fetch("/assets/search-index.json", {
+      headers: { Accept: "application/json" }
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Search index request failed: ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data) && data.length) searchIndex = data;
+        return searchIndex;
+      })
+      .catch(() => searchIndex);
+  }
+  return searchIndexRequest;
+}
 
 function setTheme(theme) {
   root.dataset.theme = theme;
@@ -92,26 +113,40 @@ function renderResults(query = "") {
   if (!results) return;
   const normalized = query.trim().toLocaleLowerCase();
   const matches = searchIndex.filter((item) => {
-    const haystack = `${item.title} ${item.type} ${item.description} ${item.keywords}`.toLocaleLowerCase();
+    const haystack = [item.title, item.type, item.description, item.keywords].filter(Boolean).join(" ").toLocaleLowerCase();
     return !normalized || normalized.split(/\s+/).every((term) => haystack.includes(term));
   });
 
+  results.replaceChildren();
   if (!matches.length) {
-    results.innerHTML = '<li class="search-empty">没有找到相关内容。试试“安全”“研究”或“项目”。</li>';
+    const empty = document.createElement("li");
+    empty.className = "search-empty";
+    empty.textContent = "没有找到相关内容。试试“安全”“研究”或“项目”。";
+    results.append(empty);
     return;
   }
 
-  results.innerHTML = matches.map((item) => `
-    <li>
-      <a href="${item.url}">
-        <span class="search-type">${item.type}</span>
-        <span>
-          <span class="search-title">${item.title}</span>
-          <span class="search-description">${item.description}</span>
-        </span>
-      </a>
-    </li>
-  `).join("");
+  matches.forEach((item) => {
+    const row = document.createElement("li");
+    const link = document.createElement("a");
+    const type = document.createElement("span");
+    const copy = document.createElement("span");
+    const title = document.createElement("span");
+    const description = document.createElement("span");
+
+    link.href = item.url;
+    type.className = "search-type";
+    type.textContent = item.type || "Page";
+    title.className = "search-title";
+    title.textContent = item.title || "Untitled";
+    description.className = "search-description";
+    description.textContent = item.description || "";
+
+    copy.append(title, description);
+    link.append(type, copy);
+    row.append(link);
+    results.append(row);
+  });
 }
 
 function openSearch() {
@@ -119,6 +154,9 @@ function openSearch() {
   renderResults("");
   dialog.showModal();
   requestAnimationFrame(() => searchInput?.focus());
+  loadSearchIndex().then(() => {
+    if (dialog.open) renderResults(searchInput?.value || "");
+  });
 }
 
 document.querySelectorAll("[data-search-open]").forEach((button) => {
@@ -159,12 +197,46 @@ document.querySelectorAll("[data-filter]").forEach((button) => {
   });
 });
 
+function enhanceMarkdownCodeBlocks() {
+  const addHeader = (block) => {
+    if (block.querySelector(":scope > .code-header")) return;
+    block.classList.add("code-block");
+
+    const languageClass = [...block.classList].find((name) => name.startsWith("language-"));
+    const language = languageClass ? languageClass.slice("language-".length).replaceAll("-", " ") : "code";
+    const header = document.createElement("div");
+    const label = document.createElement("span");
+    const button = document.createElement("button");
+
+    header.className = "code-header";
+    label.textContent = language;
+    button.className = "copy-code";
+    button.type = "button";
+    button.dataset.copyCode = "";
+    button.textContent = "复制";
+    header.append(label, button);
+    block.prepend(header);
+  };
+
+  document.querySelectorAll(".article-body div.highlighter-rouge").forEach(addHeader);
+  document.querySelectorAll(".article-body > pre").forEach((pre) => {
+    const wrapper = document.createElement("div");
+    const languageClass = [...pre.classList].find((name) => name.startsWith("language-"));
+    wrapper.className = languageClass ? `code-block ${languageClass}` : "code-block";
+    pre.before(wrapper);
+    wrapper.append(pre);
+    addHeader(wrapper);
+  });
+}
+
+enhanceMarkdownCodeBlocks();
+
 document.querySelectorAll("[data-copy-code]").forEach((button) => {
   button.addEventListener("click", async () => {
     const block = button.closest(".code-block");
     const code = block?.querySelector("code")?.textContent || "";
     try {
-      await navigator.clipboard.writeText(code.trim());
+      await navigator.clipboard.writeText(code.trimEnd());
       const original = button.textContent;
       button.textContent = "已复制";
       setTimeout(() => { button.textContent = original; }, 1600);
@@ -173,6 +245,58 @@ document.querySelectorAll("[data-copy-code]").forEach((button) => {
     }
   });
 });
+
+function generateTableOfContents() {
+  const lists = [...document.querySelectorAll("[data-generated-toc]")];
+  if (!lists.length) return;
+
+  const source = document.querySelector(lists[0].dataset.tocSource || "#note-body");
+  const headings = source ? [...source.querySelectorAll("h2, h3")] : [];
+  const usedIds = new Set();
+
+  headings.forEach((heading, index) => {
+    const normalized = heading.textContent
+      .trim()
+      .normalize("NFKC")
+      .toLocaleLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\u3400-\u9fff-]/g, "")
+      .replace(/^-+|-+$/g, "");
+    const base = heading.id || normalized || `section-${index + 1}`;
+    let candidate = base;
+    let suffix = 2;
+    let existing = document.getElementById(candidate);
+
+    while (usedIds.has(candidate) || (existing && existing !== heading)) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+      existing = document.getElementById(candidate);
+    }
+
+    heading.id = candidate;
+    usedIds.add(candidate);
+  });
+
+  document.querySelectorAll("[data-generated-toc-shell]").forEach((shell) => {
+    shell.hidden = headings.length === 0;
+  });
+
+  lists.forEach((list) => {
+    list.replaceChildren();
+    headings.forEach((heading) => {
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      item.className = `toc-level-${heading.tagName.toLocaleLowerCase()}`;
+      link.href = `#${heading.id}`;
+      link.dataset.tocTarget = heading.id;
+      link.textContent = heading.textContent.trim();
+      item.append(link);
+      list.append(item);
+    });
+  });
+}
+
+generateTableOfContents();
 
 const progress = document.querySelector("[data-progress]");
 if (progress) {
@@ -187,13 +311,18 @@ if (progress) {
 
 const tocLinks = [...document.querySelectorAll(".article-toc a")];
 if (tocLinks.length && "IntersectionObserver" in window) {
-  const headings = tocLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+  const tocTargets = tocLinks.map((link) => {
+    const href = link.getAttribute("href") || "";
+    let id = link.dataset.tocTarget || href.replace(/^#/, "");
+    try { id = decodeURIComponent(id); } catch { /* Keep the original fragment. */ }
+    return { link, heading: document.getElementById(id) };
+  }).filter((item) => item.heading);
   const observer = new IntersectionObserver((entries) => {
     const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
     if (!visible) return;
-    tocLinks.forEach((link) => link.classList.toggle("is-active", link.getAttribute("href") === `#${visible.target.id}`));
+    tocTargets.forEach(({ link, heading }) => link.classList.toggle("is-active", heading === visible.target));
   }, { rootMargin: "-20% 0px -68%", threshold: [0, 1] });
-  headings.forEach((heading) => observer.observe(heading));
+  tocTargets.forEach(({ heading }) => observer.observe(heading));
 }
 
 document.querySelectorAll("[data-current-year]").forEach((node) => {

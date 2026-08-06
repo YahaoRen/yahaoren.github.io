@@ -1,0 +1,39 @@
+title: "任亚浩 · Yahao Ren"
+description: "任亚浩的个人研究主页与公开笔记"
+url: "https://yahaoren.github.io"
+baseurl: ""
+lang: "zh-CN"
+timezone: "Asia/Shanghai"
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+future: false
+
+collections:
+  notes:
+    output: true
+    permalink: /writing/:name.html
+
+defaults:
+  - scope:
+      path: ""
+      type: notes
+    values:
+      layout: note
+      kind: "笔记"
+      published: false
+
+exclude:
+  - output
+  - README.md
+  - OBSIDIAN_SETUP.md
+  - _templates
+  - .jekyll-cache
+  - .jekyll-metadata
+  - vendor
+

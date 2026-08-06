@@ -1,3 +1,9 @@
+---
+layout: null
+permalink: /
+---
+{% assign published_notes = site.notes | where: 'published', true %}
+{% assign public_notes = published_notes | where_exp: 'note', 'note.date <= site.time' | sort: 'date' | reverse %}
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -173,6 +179,35 @@
         </div>
       </div>
     </section>
+
+    {% if public_notes.size > 0 %}
+    <section class="section" aria-labelledby="recent-writing-title">
+      <div class="container">
+        <header class="section-header">
+          <p class="section-kicker">03 / Recent writing</p>
+          <div>
+            <h2 class="section-title" id="recent-writing-title">最新笔记</h2>
+            <p class="section-intro">最近公开的 Markdown 文章与研究笔记。</p>
+          </div>
+        </header>
+
+        <div class="entry-list">
+          {% for note in public_notes limit: 3 %}
+          {% assign note_summary = note.summary | default: note.description | default: note.excerpt | strip_html | normalize_whitespace %}
+          <a class="entry" href="{{ note.url | relative_url }}">
+            <span class="entry-meta"><time datetime="{{ note.date | date_to_xmlschema }}">{{ note.date | date: '%Y.%m.%d' }}</time><br>{{ note.kind | default: '笔记' | escape }}</span>
+            <span>
+              <span class="entry-title">{{ note.title | default: note.name | escape }}</span>
+              {% if note_summary != '' %}<span class="entry-description">{{ note_summary | truncate: 180 | escape }}</span>{% endif %}
+            </span>
+            <span class="entry-arrow" aria-hidden="true">↗</span>
+          </a>
+          {% endfor %}
+        </div>
+        <p class="section-action"><a class="text-link internal" href="/writing/">查看全部写作</a></p>
+      </div>
+    </section>
+    {% endif %}
 
   </main>
 

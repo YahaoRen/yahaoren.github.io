@@ -1,3 +1,9 @@
+---
+layout: null
+permalink: /writing/
+---
+{% assign published_notes = site.notes | where: 'published', true %}
+{% assign public_notes = published_notes | where_exp: 'note', 'note.date <= site.time' | sort: 'date' | reverse %}
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -28,9 +34,24 @@
     </div></section>
 
     <section class="section" aria-labelledby="archive-title"><div class="container">
-      <header class="section-header"><p class="section-kicker">Archive</p><div><h2 class="section-title" id="archive-title">文章归档</h2><p class="section-intro">当前没有公开文章或研究笔记。</p></div></header>
+      <header class="section-header"><p class="section-kicker">Archive</p><div><h2 class="section-title" id="archive-title">文章归档</h2><p class="section-intro">{% if public_notes.size > 0 %}共 {{ public_notes.size }} 篇公开内容，按发布时间倒序排列。{% else %}当前没有公开文章或研究笔记。{% endif %}</p></div></header>
       <div class="entry-list">
+        {% if public_notes.size > 0 %}
+        {% for note in public_notes %}
+        {% assign note_summary = note.summary | default: note.description | default: note.excerpt | strip_html | normalize_whitespace %}
+        <a class="entry" href="{{ note.url | relative_url }}">
+          <span class="entry-meta"><time datetime="{{ note.date | date_to_xmlschema }}">{{ note.date | date: '%Y.%m.%d' }}</time><br>{{ note.kind | default: '笔记' | escape }}{% if note.reading_time %}<br>{{ note.reading_time | escape }}{% endif %}</span>
+          <span>
+            <span class="entry-title">{{ note.title | default: note.name | escape }}</span>
+            {% if note_summary != '' %}<span class="entry-description">{{ note_summary | truncate: 220 | escape }}</span>{% endif %}
+            {% if note.tags and note.tags != empty %}<span class="entry-tags">{% for tag in note.tags %}<span class="tag">{{ tag | escape }}</span>{% endfor %}</span>{% endif %}
+          </span>
+          <span class="entry-arrow" aria-hidden="true">↗</span>
+        </a>
+        {% endfor %}
+        {% else %}
         <div class="entry" role="status"><span class="entry-meta">0 items</span><span><span class="entry-title">暂无公开内容</span><span class="entry-description">后续发布的内容将显示在此页面。</span></span></div>
+        {% endif %}
       </div>
     </div></section>
   </main>
