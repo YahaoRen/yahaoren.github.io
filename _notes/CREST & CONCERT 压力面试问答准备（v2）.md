@@ -8,7 +8,7 @@ tags: []
 reading_time: ""
 published: true
 ---
-# CREST & CONCERT 压力面试问答准备（v2）
+# CREST & CONCERT 压力面试问答准备（v2
 
 > 主体项目：CREST & CONCERT（面向数据选择器投毒的可预测理论与认证防御，一作，AAAI 投稿） 关联项目：Value-Hijacking / AMRS（KDD '27 投稿） 用途：保研面试口头问答，按「说出来」的语感写，不含公式板书
 
