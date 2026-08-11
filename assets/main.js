@@ -299,7 +299,7 @@ document.querySelectorAll("[data-download-markdown]").forEach((link) => {
 
 document.querySelectorAll("[data-export-pdf]").forEach((button) => {
   button.addEventListener("click", () => {
-    setArticleActionStatus("请在打印窗口中选择“另存为 PDF”。");
+    setArticleActionStatus("请在打印窗口中选择“另存为 PDF”，纸张设为 A4。");
     requestAnimationFrame(() => window.print());
   });
 });

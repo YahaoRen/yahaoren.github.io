@@ -912,7 +912,7 @@ button {
 }
 
 .article-action {
-  min-height: 42px;
+  min-height: 44px;
   padding-inline: 15px;
   font-family: var(--font-ui);
   font-weight: 650;
@@ -1729,6 +1729,7 @@ button {
   body {
     background: #fff !important;
     color: #111 !important;
+    transition: none !important;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
@@ -1809,6 +1810,10 @@ button {
   .article-body h3,
   .article-body h4,
   .code-header {
+    break-after: avoid-page;
+  }
+
+  .article-body p:has(+ .code-block) {
     break-after: avoid-page;
   }
 
