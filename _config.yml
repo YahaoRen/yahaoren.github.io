@@ -2,6 +2,8 @@ title: "任亚浩 · Yahao Ren"
 description: "任亚浩的个人研究主页与公开笔记"
 url: "https://yahaoren.github.io"
 baseurl: ""
+repository: "YahaoRen/yahaoren.github.io"
+source_branch: "main"
 lang: "zh-CN"
 timezone: "Asia/Shanghai"
 
@@ -36,4 +38,3 @@ exclude:
   - .jekyll-cache
   - .jekyll-metadata
   - vendor
-

@@ -2,6 +2,10 @@
 <html lang="{{ site.lang | default: 'zh-CN' }}">
 <head>
   {% assign note_summary = page.summary | default: page.description | default: '' %}
+  {% assign source_repository = site.repository | default: 'YahaoRen/yahaoren.github.io' %}
+  {% assign source_branch = site.source_branch | default: 'main' %}
+  {% assign markdown_filename = page.path | split: '/' | last %}
+  {% capture markdown_source_url %}https://raw.githubusercontent.com/{{ source_repository }}/{{ source_branch }}/{{ page.path }}{% endcapture %}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title | default: page.name | escape }} · 任亚浩</title>
@@ -65,6 +69,17 @@
           <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y.%m.%d' }}</time>
           {% if page.reading_time %}<span>{{ page.reading_time | escape }}</span>{% endif %}
           {% if page.tags and page.tags != empty %}{% assign note_tags = page.tags | join: ' · ' %}<span>{{ note_tags | escape }}</span>{% endif %}
+        </div>
+        <div class="article-actions" aria-label="笔记下载与导出">
+          <a class="button article-action" href="{{ markdown_source_url | strip | escape }}" download="{{ markdown_filename | escape }}" data-download-markdown data-download-filename="{{ markdown_filename | escape }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18v2h14v-2"/></svg>
+            <span>下载 Markdown</span>
+          </a>
+          <button class="button article-action" type="button" data-export-pdf title="打开打印窗口并选择“另存为 PDF”">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5M9 14h6M9 18h4"/></svg>
+            <span>导出 PDF</span>
+          </button>
+          <span class="article-action-status" data-article-action-status role="status" aria-live="polite"></span>
         </div>
       </div>
     </header>

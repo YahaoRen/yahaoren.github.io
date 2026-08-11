@@ -71,6 +71,11 @@ git@github.com:YahaoRen/yahaoren.github.io.git
 5. Obsidian Git 自动执行 commit、pull 和 push。
 6. GitHub Pages 构建后，文章出现在写作归档、主页最新笔记、站内搜索、RSS 和 sitemap 中。
 
+每篇公开文章的标题下方提供两个操作：
+
+- **下载 Markdown**：下载仓库中的原始 `.md` 文件，包含 YAML front matter。
+- **导出 PDF**：打开浏览器打印窗口；选择“另存为 PDF”即可导出排版后的文章。
+
 ## 公开仓库安全边界
 
 `published: false` 只阻止网页生成，不会隐藏 GitHub 仓库中的 Markdown 源文件或 Git 历史。`assets/notes/` 中的图片也会进入公开仓库，即使引用它的笔记尚未发布。此 Vault 只能保存允许立即出现在 GitHub 源码中的内容；真正私密的笔记应放在另一个私有 Vault。不要放入密码、个人隐私、匿名评审材料或未公开实验结果。

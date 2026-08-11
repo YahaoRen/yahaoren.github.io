@@ -246,6 +246,66 @@ document.querySelectorAll("[data-copy-code]").forEach((button) => {
   });
 });
 
+const articleActionStatus = document.querySelector("[data-article-action-status]");
+let articleActionStatusTimer;
+
+function setArticleActionStatus(message, clearAfter = 0) {
+  if (!articleActionStatus) return;
+  clearTimeout(articleActionStatusTimer);
+  articleActionStatus.textContent = message;
+  if (clearAfter > 0) {
+    articleActionStatusTimer = setTimeout(() => {
+      articleActionStatus.textContent = "";
+    }, clearAfter);
+  }
+}
+
+document.querySelectorAll("[data-download-markdown]").forEach((link) => {
+  link.addEventListener("click", async (event) => {
+    event.preventDefault();
+    if (link.getAttribute("aria-busy") === "true") return;
+
+    const sourceUrl = link.href;
+    const filename = link.dataset.downloadFilename || "note.md";
+    link.setAttribute("aria-busy", "true");
+    setArticleActionStatus("正在准备 Markdown…");
+
+    try {
+      const response = await fetch(sourceUrl, {
+        cache: "no-store",
+        headers: { Accept: "text/markdown, text/plain;q=0.9, */*;q=0.8" }
+      });
+      if (!response.ok) throw new Error(`Markdown download failed: ${response.status}`);
+
+      const markdown = await response.blob();
+      const blobUrl = URL.createObjectURL(new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
+      const download = document.createElement("a");
+      download.href = blobUrl;
+      download.download = filename;
+      download.hidden = true;
+      document.body.append(download);
+      download.click();
+      download.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      setArticleActionStatus("Markdown 已开始下载。", 3200);
+    } catch {
+      setArticleActionStatus("无法直接下载，正在打开 Markdown 源文件…");
+      window.location.assign(sourceUrl);
+    } finally {
+      link.removeAttribute("aria-busy");
+    }
+  });
+});
+
+document.querySelectorAll("[data-export-pdf]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setArticleActionStatus("请在打印窗口中选择“另存为 PDF”。");
+    requestAnimationFrame(() => window.print());
+  });
+});
+
+window.addEventListener("afterprint", () => setArticleActionStatus("", 0));
+
 function generateTableOfContents() {
   const lists = [...document.querySelectorAll("[data-generated-toc]")];
   if (!lists.length) return;
